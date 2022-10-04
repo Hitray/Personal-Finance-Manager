@@ -10,7 +10,7 @@ import java.net.Socket;
 public class Main {
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(8989);) { 
-            System.out.println("Сервер запущен!");
+            System.out.println("Server runs!");
 
             ProductsTracker productsTracker = new ProductsTracker();
             while (true) { 
@@ -19,7 +19,7 @@ public class Main {
                         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                         PrintWriter out = new PrintWriter(socket.getOutputStream());
                 ) {
-                    // обработка одного подключения
+                    
                     String inString = in.readLine();
 
                     
@@ -33,7 +33,7 @@ public class Main {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Не могу стартовать сервер");
+            System.out.println("Dont starts server");
             e.printStackTrace();
         }
     }
