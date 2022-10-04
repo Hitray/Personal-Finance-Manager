@@ -26,16 +26,16 @@ public class ClientMain {
                 if(currentCommand.equalsIgnoreCase("end") ||
                    currentCommand.equalsIgnoreCase("exit") ||
                    currentCommand.equalsIgnoreCase("quit")){
-                    System.out.println("Программа остановлена");
+                    System.out.println("App Stop");
                     break;
                 }else if(subSplitCommand.length > 1 && subSplitCommand[0].equalsIgnoreCase("add")){
                     String currentDate = getCurrentDate();
                     int amount = Integer.parseInt(subSplitCommand[2]);
 
                     out.println("{\"title\": \""+ subSplitCommand[1] +"\", \"date\": \"" + currentDate + "\", \"sum\": " + amount + "}");
-                    System.out.println("Данные переданы на сервер.");
+                    System.out.println("Data push server");
 
-                    System.out.println("Ответ от сервера:");
+                    System.out.println("Answer on server:");
                     System.out.println(in.readLine());
                 }
             }
