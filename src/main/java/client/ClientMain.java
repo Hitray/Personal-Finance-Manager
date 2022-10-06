@@ -1,98 +1,52 @@
-package product;
+package client;
 
-import jsonData.JsonProductData;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
+public class ClientMain {
+    private static int port = 8989;
+    private static String ip = "localhost";
 
-public class ProductsTracker {
-    private Map trackedProducts = new HashMap<String, ProductsCategory>();
-    
-    private Map hashProducts = new HashMap<String, String>();
+    public static void main(String[] args) {
+        try(Socket clientSocket = new Socket(ip, port);
+            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));) {
 
-    private static String template = "булка\tеда\n" +
-            "колбаса\tеда\n" +
-            "сухарики\tеда\n" +
-            "курица\tеда\n" +
-            "тапки\tодежда\n" +
-            "шапка\tодежда\n" +
-            "мыло\tбыт\n" +
-            "акции\tфинансы";
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-    public ProductsTracker(){
-        loadExistingCategories();
-    }
+            while (true){
+                String currentCommand = reader.readLine();
+                String[] subSplitCommand = currentCommand.split(" ");
 
-    private void loadExistingCategories(){
-        try {
-            File myObj = new File("categories.tsv");
+                if(currentCommand.equalsIgnoreCase("end") ||
+                   currentCommand.equalsIgnoreCase("exit") ||
+                   currentCommand.equalsIgnoreCase("quit")){
+                    System.out.println("stop");
+                    break;
+                }else if(subSplitCommand.length > 1 && subSplitCommand[0].equalsIgnoreCase("add")){
+                    String currentDate = getCurrentDate();
+                    int sum = Integer.parseInt(subSplitCommand[2]);
 
-           
-            if(myObj.exists() == false){
-                myObj.createNewFile();
+                    out.println("{\"title\": \""+ subSplitCommand[1] +"\", \"date\": \"" + currentDate + "\", \"sum\": " + sum + "}");
+                    System.out.println("app on server.");
 
-                Files.writeString(Path.of(myObj.getPath()), template);
-                System.out.println("File load data.");
-            } else{
-                System.out.println("Data category.");
-            }
-
-            Scanner myReader = new Scanner(myObj);
-            while (myReader.hasNextLine()) {
-                String data = myReader.nextLine();
-
-                String[] splitedData = data.split("\t");
-
-                if(splitedData.length == 2){
-                    ProductsCategory currentCategory;
-                    if(trackedProducts.containsKey(splitedData[1])){
-                        currentCategory = (ProductsCategory) trackedProducts.get(splitedData[1]);
-                    } else {
-                        currentCategory = new ProductsCategory(splitedData[1]);
-                    }
-                    currentCategory.addProduct(splitedData[0]);
-                    hashProducts.put(splitedData[0], splitedData[1]);
-                    trackedProducts.put(splitedData[1], currentCategory);
+                    System.out.println("answer on server:");
+                    System.out.println(in.readLine());
                 }
-                System.out.println(data);
             }
-            myReader.close();
-        } catch (Exception e) {
+        } catch (IOException e){
             throw new RuntimeException(e);
         }
     }
 
-    public void addNewProduct(JsonProductData product){
-        
-        if(hashProducts.containsKey(product.title)){
-            ProductsCategory prCat = (ProductsCategory) trackedProducts.get(hashProducts.get(product.title));
-            prCat.trackSum(product);
-        } else {
-            ProductsCategory currentCategory;
-            if(trackedProducts.containsKey("another")){
-                currentCategory = (ProductsCategory) trackedProducts.get("another");
-            } else {
-                currentCategory = new ProductsCategory("another");
-            }
-            currentCategory.addProduct(product.title);
-            currentCategory.trackSum(product);
-            hashProducts.put(product.title, "another");
-            trackedProducts.put("another", currentCategory);
-        }
-
-        System.out.println("Point " + product.title + " load in category " + hashProducts.get(product.title) + " summ: " + product.sum);
-    }
-
-    public String getJsonSumForCategoryByProductName(String productName){
-        ProductsCategory productsCategory = (ProductsCategory) trackedProducts.get(hashProducts.get(productName));
-
-        return "{" +
-                "  \"maxCategory\": {" +
-                "    \"category\": \"" + productsCategory.getCategoryName() + "\"," +
-                "    \"sum\": \"" + productsCategory.getSum() + "\"" +
-                "  }" +
-                "}";
+    private static String getCurrentDate(){
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+        LocalDateTime now = LocalDateTime.now();
+        return dtf.format(now);
     }
 }
