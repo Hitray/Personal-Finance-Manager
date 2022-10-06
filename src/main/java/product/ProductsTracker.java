@@ -1,5 +1,7 @@
 package product;
 
+import jsonData.JsonProductData;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,6 +9,8 @@ import java.util.*;
 
 public class ProductsTracker {
     private Map trackedProducts = new HashMap<String, ProductsCategory>();
+    // Key - Название товара Value - Категория
+    private Map hashProducts = new HashMap<String, String>();
 
     private static String template = "булка\tеда\n" +
             "колбаса\tеда\n" +
@@ -25,14 +29,14 @@ public class ProductsTracker {
         try {
             File myObj = new File("categories.tsv");
 
-           
+         
             if(myObj.exists() == false){
                 myObj.createNewFile();
 
                 Files.writeString(Path.of(myObj.getPath()), template);
-                System.out.println("Создан файл с категориями, загрузка данных.");
+                System.out.println("Load data.");
             } else{
-                System.out.println("Файл с категориями найден, загрузка данных.");
+                System.out.println("File data.");
             }
 
             Scanner myReader = new Scanner(myObj);
@@ -49,6 +53,7 @@ public class ProductsTracker {
                         currentCategory = new ProductsCategory(splitedData[1]);
                     }
                     currentCategory.addProduct(splitedData[0]);
+                    hashProducts.put(splitedData[0], splitedData[1]);
                     trackedProducts.put(splitedData[1], currentCategory);
                 }
                 System.out.println(data);
@@ -57,5 +62,37 @@ public class ProductsTracker {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void addNewProduct(JsonProductData product){
+        
+        if(hashProducts.containsKey(product.title)){
+            ProductsCategory prCat = (ProductsCategory) trackedProducts.get(hashProducts.get(product.title));
+            prCat.trackSum(product);
+        } else {
+            ProductsCategory currentCategory;
+            if(trackedProducts.containsKey("другое")){
+                currentCategory = (ProductsCategory) trackedProducts.get("другое");
+            } else {
+                currentCategory = new ProductsCategory("другое");
+            }
+            currentCategory.addProduct(product.title);
+            currentCategory.trackSum(product);
+            hashProducts.put(product.title, "другое");
+            trackedProducts.put("другое", currentCategory);
+        }
+
+        System.out.println("point " + product.title + " load category " + hashProducts.get(product.title) + " summ: " + product.sum);
+    }
+
+    public String getJsonSumForCategoryByProductName(String productName){
+        ProductsCategory productsCategory = (ProductsCategory) trackedProducts.get(hashProducts.get(productName));
+
+        return "{" +
+                "  \"maxCategory\": {" +
+                "    \"category\": \"" + productsCategory.getCategoryName() + "\"," +
+                "    \"sum\": \"" + productsCategory.getSum() + "\"" +
+                "  }" +
+                "}";
     }
 }
