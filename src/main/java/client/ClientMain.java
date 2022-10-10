@@ -13,34 +13,34 @@ public class ClientMain {
     private static String ip = "localhost";
 
     public static void main(String[] args) {
-        try(Socket clientSocket = new Socket(ip, port);
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));) {
+        while (true) {
+            try (Socket clientSocket = new Socket(ip, port);
+                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));) {
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-            while (true){
                 String currentCommand = reader.readLine();
                 String[] subSplitCommand = currentCommand.split(" ");
 
-                if(currentCommand.equalsIgnoreCase("end") ||
-                   currentCommand.equalsIgnoreCase("exit") ||
-                   currentCommand.equalsIgnoreCase("quit")){
+                if (currentCommand.equalsIgnoreCase("end") ||
+                        currentCommand.equalsIgnoreCase("exit") ||
+                        currentCommand.equalsIgnoreCase("quit")) {
                     System.out.println("stop");
                     break;
-                }else if(subSplitCommand.length > 1 && subSplitCommand[0].equalsIgnoreCase("add")){
+                } else if (subSplitCommand.length > 1 && subSplitCommand[0].equalsIgnoreCase("add")) {
                     String currentDate = getCurrentDate();
                     int sum = Integer.parseInt(subSplitCommand[2]);
 
-                    out.println("{\"title\": \""+ subSplitCommand[1] +"\", \"date\": \"" + currentDate + "\", \"sum\": " + sum + "}");
+                    out.println("{\"title\": \"" + subSplitCommand[1] + "\", \"date\": \"" + currentDate + "\", \"sum\": " + sum + "}");
                     System.out.println("app on server.");
 
                     System.out.println("answer on server:");
                     System.out.println(in.readLine());
                 }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        } catch (IOException e){
-            throw new RuntimeException(e);
         }
     }
 
