@@ -11,11 +11,12 @@ import java.net.Socket;
 
 public class Main {
     public static void main(String[] args) {
-        try (ServerSocket serverSocket = new ServerSocket(8989);) 
-            System.out.println("Server runs!");
+        try (ServerSocket serverSocket = new ServerSocket(8989);) { 
+            System.out.println("Server starts!");
 
             ProductsTracker productsTracker = new ProductsTracker();
             while (true) { 
+                System.out.println("Server waiting connect client");
                 try (
                         Socket socket = serverSocket.accept();
                         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -24,15 +25,15 @@ public class Main {
                     
                     String inString = in.readLine();
 
-                    // Формируем JSON из строки и добавляем данные в ProductTracer
+                   
                     Gson gson = new Gson();
                     JsonProductData jsonProductData = gson.fromJson(inString, JsonProductData.class);
                     productsTracker.addNewProduct(jsonProductData);
 
-                    
-                    String outJsonData = productsTracker.getJsonSumForCategoryByProductName(jsonProductData.title);
+                   
+                    String outJsonData = productsTracker.getJsonMaxSumForCategoryes();
 
-                    System.out.println("Clietn json : ");
+                    System.out.println("Creat json for client: ");
                     System.out.println(outJsonData);
 
                     out.println(outJsonData);
