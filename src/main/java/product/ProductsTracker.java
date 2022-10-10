@@ -6,10 +6,12 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 public class ProductsTracker {
     private Map<String, ProductsCategory> trackedProducts = new HashMap();
-  
+    // Key - Название товара Value - Категория
     private Map<String, String> hashProducts = new HashMap();
 
     private static String template = "булка\tеда\n" +
@@ -29,14 +31,14 @@ public class ProductsTracker {
         try {
             File myObj = new File("categories.tsv");
 
-         
+        
             if(myObj.exists() == false){
                 myObj.createNewFile();
 
                 Files.writeString(Path.of(myObj.getPath()), template);
-                System.out.println("Create file catery, load app.");
+                System.out.println("creat file with catery, Load app.");
             } else{
-                System.out.println("Find file catery, load app.");
+                System.out.println("Find file with catery, Load app.");
             }
 
             Scanner myReader = new Scanner(myObj);
@@ -79,27 +81,27 @@ public class ProductsTracker {
     }
 
     public void addNewProduct(JsonProductData product){
-        
+      
         if(hashProducts.containsKey(product.title)){
             ProductsCategory prCat = (ProductsCategory) trackedProducts.get(hashProducts.get(product.title));
             prCat.trackSum(product);
         } else {
             ProductsCategory currentCategory;
-            if(trackedProducts.containsKey("another")){
-                currentCategory = (ProductsCategory) trackedProducts.get("другое");
+            if(trackedProducts.containsKey("Another")){
+                currentCategory = (ProductsCategory) trackedProducts.get("Another");
             } else {
-                currentCategory = new ProductsCategory("another");
+                currentCategory = new ProductsCategory("Another");
             }
             currentCategory.addProduct(product.title);
             currentCategory.trackSum(product);
-            hashProducts.put(product.title, "another");
-            trackedProducts.put("another", currentCategory);
+            hashProducts.put(product.title, "Another");
+            trackedProducts.put("Another", currentCategory);
         }
 
-        System.out.println("Point " + product.title + " add on catery " + hashProducts.get(product.title) + " on summ: " + product.sum);
+        System.out.println("Point " + product.title + " load in category " + hashProducts.get(product.title) + " on summ: " + product.sum);
     }
 
-    public String getJsonMaxSumForCategoryes(){
+    public String getJsonSumForCategoryByProductName(String productName){
         ProductsCategory productsCategory = getCategoryWithHighestSum();
 
         return "{" +
